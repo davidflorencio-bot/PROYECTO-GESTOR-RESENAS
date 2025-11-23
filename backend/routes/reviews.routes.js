@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/reviews.controller');
-const authController = require('../controllers/auth.controller');
+const { protect } = require('../middleware/auth.middleware');
 
 // Rutas públicas
 router.get('/', reviewController.getAllReviews);
 router.get('/movie/:movieId', reviewController.getReviewsByMovie);
 
 // Rutas protegidas
-router.use(authController.protect);
+router.use(protect);
 
 router.get('/user/my-reviews', reviewController.getUserReviews);
 router.post('/', reviewController.createReview);
