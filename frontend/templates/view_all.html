@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="view-all-container">
+    <!-- Filters -->
+    <section class="filters-section">
+        <div class="filters-header">
+            <h1>{{ title }}</h1>
+            <div class="results-count">{{ items|length }} resultados</div>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label for="genre">Género</label>
+                <select id="genre" name="genre" onchange="applyFilters()">
+                    <option value="">Todos los géneros</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre }}" {% if request.args.get('genre') == genre %}selected{% endif %}>
+                        {{ genre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="sort">Ordenar por</label>
+                <select id="sort" name="sort" onchange="applyFilters()">
+                    <option value="release_date" {% if request.args.get('sort') == 'release_date' %}selected{% endif %}>Fecha de estreno</option>
+                    <option value="rating" {% if request.args.get('sort') == 'rating' %}selected{% endif %}>Calificación</option>
+                    <option value="title" {% if request.args.get('sort') == 'title' %}selected{% endif %}>Título A-Z</option>
+                    <option value="popularity" {% if request.args.get('sort') == 'popularity' %}selected{% endif %}>Popularidad</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="year">Año</label>
+                <select id="year" name="year" onchange="applyFilters()">
+                    <option value="">Todos los años</option>
+                    {% for year in range(2025, 1990, -1) %}
+                    <option value="{{ year }}" {% if request.args.get('year') == year|string %}selected{% endif %}>
+                        {{ year }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Grid -->
+    <section class="section">
+        {% if items %}
+        <div class="items-grid large">
+            {% for item in items %}
+            <div class="item-card">
+                <a href="{{ url_for('movie_detail' if 'releaseDate' in item else 'tvshow_detail', id=item._id) }}" class="item-poster">
+                    <img src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy">
+                    <div class="item-overlay">
+                        <div class="rating">{{ item.rating }}</div>
+                        <button class="btn-play"><i class="fas fa-play"></i></button>
+                    </div>
+                </a>
+                <div class="item-info">
+                    <h3 class="item-title">{{ item.title }}</h3>
+                    <div class="item-meta">
+                        <span>{{ (item.releaseDate if 'releaseDate' in item else item.firstAirDate)[:4] }}</span>
+                        <span>{{ item.genre[0] if item.genre else '' }}</span>
+                        {% if 'numberOfSeasons' in item %}
+                        <span>{{ item.numberOfSeasons }} temp.</span>
+                        {% endif %}
+                    </div>
+                    <p class="item-overview">{{ item.overview[:100] }}...</p>
+                    {% if user %}
+                    <button class="watchlist-btn btn-icon" 
+                            data-id="{{ item._id }}" 
+                            data-type="{{ 'movie' if 'releaseDate' in item else 'tvshow' }}"
+                            data-title="{{ item.title }}"
+                            data-poster="{{ item.poster }}"
+                            title="Agregar a mi lista">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No se encontraron resultados</h3>
+            <p>Intenta con otros filtros o términos de búsqueda</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">Volver al Inicio</a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+function applyFilters() {
+    const genre = document.getElementById('genre').value;
+    const sort = document.getElementById('sort').value;
+    const year = document.getElementById('year').value;
+    
+    const params = new URLSearchParams();
+    if (genre) params.append('genre', genre);
+    if (sort) params.append('sort', sort);
+    if (year) params.append('year', year);
+    
+    window.location.search = params.toString();
+}
+</script>
+{% endblock %}

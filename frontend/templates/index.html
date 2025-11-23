@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-slider">
+        {% for movie in hero_movies %}
+        <div class="hero-slide {% if loop.first %}active{% endif %}" 
+             style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('{{ movie.backdrop }}');">
+            <div class="hero-content">
+                <h1 class="hero-title">{{ movie.title }}</h1>
+                <p class="hero-overview">{{ movie.overview[:150] }}...</p>
+                <div class="hero-meta">
+                    <span class="rating"><i class="fas fa-star"></i> {{ movie.rating }}/10</span>
+                    <span class="year">{{ movie.releaseDate[:4] }}</span>
+                    <span class="duration">{{ movie.duration }} min</span>
+                </div>
+                <div class="hero-actions">
+                    <a href="{{ url_for('movie_detail', id=movie._id) }}" class="btn btn-primary btn-large">
+                        <i class="fas fa-play"></i> Ver Detalles
+                    </a>
+                    {% if user %}
+                    <button class="btn btn-outline btn-large watchlist-btn" 
+                            data-id="{{ movie._id }}" 
+                            data-type="movie"
+                            data-title="{{ movie.title }}"
+                            data-poster="{{ movie.poster }}">
+                        <i class="fas fa-plus"></i> Mi Lista
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="hero-controls">
+        <button class="hero-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="hero-next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+</section>
+
+<!-- Popular Movies -->
+<section class="section">
+    <div class="section-header">
+        <h2>Películas Populares</h2>
+        <a href="{{ url_for('view_movies') }}" class="see-all">Ver todas</a>
+    </div>
+    <div class="items-grid">
+        {% for movie in popular_movies %}
+        <div class="item-card">
+            <a href="{{ url_for('movie_detail', id=movie._id) }}" class="item-poster">
+                <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+                <div class="item-overlay">
+                    <div class="rating">{{ movie.rating }}</div>
+                    <button class="btn-play"><i class="fas fa-play"></i></button>
+                </div>
+            </a>
+            <div class="item-info">
+                <h3 class="item-title">{{ movie.title }}</h3>
+                <div class="item-meta">
+                    <span>{{ movie.releaseDate[:4] }}</span>
+                    <span>{{ movie.genre[0] if movie.genre else '' }}</span>
+                </div>
+                {% if user %}
+                <button class="watchlist-btn btn-icon" 
+                        data-id="{{ movie._id }}" 
+                        data-type="movie"
+                        data-title="{{ movie.title }}"
+                        data-poster="{{ movie.poster }}"
+                        title="Agregar a mi lista">
+                    <i class="fas fa-plus"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Popular TV Shows -->
+<section class="section">
+    <div class="section-header">
+        <h2>Series Populares</h2>
+        <a href="{{ url_for('view_tvshows') }}" class="see-all">Ver todas</a>
+    </div>
+    <div class="items-grid">
+        {% for tvshow in popular_tvshows %}
+        <div class="item-card">
+            <a href="{{ url_for('tvshow_detail', id=tvshow._id) }}" class="item-poster">
+                <img src="{{ tvshow.poster }}" alt="{{ tvshow.title }}" loading="lazy">
+                <div class="item-overlay">
+                    <div class="rating">{{ tvshow.rating }}</div>
+                    <button class="btn-play"><i class="fas fa-play"></i></button>
+                </div>
+            </a>
+            <div class="item-info">
+                <h3 class="item-title">{{ tvshow.title }}</h3>
+                <div class="item-meta">
+                    <span>{{ tvshow.firstAirDate[:4] }}</span>
+                    <span>{{ tvshow.genre[0] if tvshow.genre else '' }}</span>
+                    <span>{{ tvshow.numberOfSeasons }} temp.</span>
+                </div>
+                {% if user %}
+                <button class="watchlist-btn btn-icon" 
+                        data-id="{{ tvshow._id }}" 
+                        data-type="tvshow"
+                        data-title="{{ tvshow.title }}"
+                        data-poster="{{ tvshow.poster }}"
+                        title="Agregar a mi lista">
+                    <i class="fas fa-plus"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

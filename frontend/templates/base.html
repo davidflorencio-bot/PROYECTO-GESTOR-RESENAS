@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CineReviews - Tu plataforma de reseñas{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}" class="logo">
+                    <i class="fas fa-film"></i>
+                    <span>CineReviews</span>
+                </a>
+            </div>
+            
+            <div class="nav-search">
+                <form action="{{ url_for('search') }}" method="GET" class="search-form">
+                    <input type="text" name="q" placeholder="Buscar películas, series..." id="search-input">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                    <div class="search-results" id="search-results"></div>
+                </form>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('view_movies') }}" class="nav-link">Películas</a>
+                <a href="{{ url_for('view_tvshows') }}" class="nav-link">Series</a>
+                
+                {% if user %}
+                    <div class="user-menu">
+                        <img src="{{ user.avatar or '/static/images/default-avatar.png' }}" alt="{{ user.username }}" class="user-avatar">
+                        <span>{{ user.username }}</span>
+                        <div class="dropdown-menu">
+                            <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i> Mi Perfil</a>
+                            <a href="{{ url_for('account') }}"><i class="fas fa-cog"></i> Configuración</a>
+                            <hr>
+                            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="auth-links">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline">Iniciar Sesión</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Registrarse</a>
+                    </div>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                        <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>CineReviews</h3>
+                <p>Tu plataforma de confianza para descubrir y reseñar películas y series.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Enlaces</h4>
+                <a href="{{ url_for('view_movies') }}">Películas</a>
+                <a href="{{ url_for('view_tvshows') }}">Series</a>
+                <a href="{{ url_for('search') }}">Búsqueda</a>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <a href="#">Términos de uso</a>
+                <a href="#">Privacidad</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 CineReviews. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

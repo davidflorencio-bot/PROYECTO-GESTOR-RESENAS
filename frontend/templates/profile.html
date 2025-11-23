@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Perfil - CineReviews{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- User Info -->
+    <section class="profile-header">
+        <div class="profile-avatar">
+            <img src="{{ user.avatar or '/static/images/default-avatar.png' }}" alt="{{ user.username }}">
+        </div>
+        <div class="profile-info">
+            <h1>{{ user.username }}</h1>
+            <p class="profile-email">{{ user.email }}</p>
+            <p class="profile-join">
+                Miembro desde 
+                {% if user.createdAt is string %}
+                    {{ user.createdAt[:7] }}
+                {% else %}
+                    {{ user.createdAt.strftime('%B %Y') }}
+                {% endif %}
+            </p>
+            
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-number">{{ reviews|length }}</span>
+                    <span class="stat-label">Reseñas</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">{{ watchlist|length }}</span>
+                    <span class="stat-label">En Mi Lista</span>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('account') }}" class="btn btn-outline">
+                <i class="fas fa-edit"></i> Editar Perfil
+            </a>
+        </div>
+    </section>
+
+    <!-- Watchlist -->
+    <section class="section">
+        <div class="section-header">
+            <h2>Mi Lista</h2>
+            <span class="badge">{{ watchlist|length }} items</span>
+        </div>
+        
+        {% if watchlist and watchlist|length > 0 %}
+        <div class="items-grid">
+            {% for item in watchlist %}
+            <div class="item-card">
+                <a href="{{ url_for('movie_detail' if item.itemType == 'movie' else 'tvshow_detail', id=item.itemId) }}" class="item-poster">
+                    <img src="{{ item.poster }}" alt="{{ item.title }}" loading="lazy" onerror="this.src='/static/images/default-poster.png'">
+                    <div class="item-overlay">
+                        <button class="btn-play"><i class="fas fa-play"></i></button>
+                    </div>
+                </a>
+                <div class="item-info">
+                    <h3 class="item-title">{{ item.title }}</h3>
+                    <div class="item-meta">
+                        <span class="item-type">{{ 'Película' if item.itemType == 'movie' else 'Serie' }}</span>
+                        <span>
+                            {% if item.addedAt is string %}
+                                {{ item.addedAt[:10] }}
+                            {% else %}
+                                {{ item.addedAt.strftime('%d/%m/%Y') }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <form action="{{ url_for('remove_from_watchlist') }}" method="POST" class="watchlist-form">
+                        <input type="hidden" name="itemId" value="{{ item.itemId }}">
+                        <input type="hidden" name="itemType" value="{{ item.itemType }}">
+                        <button type="submit" class="btn btn-danger btn-sm" title="Quitar de mi lista">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bookmark"></i>
+            <h3>Tu lista está vacía</h3>
+            <p>Agrega películas y series que quieras ver más tarde</p>
+            <a href="{{ url_for('view_movies') }}" class="btn btn-primary">Explorar Películas</a>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- My Reviews -->
+    <section class="section">
+        <div class="section-header">
+            <h2>Mis Reseñas</h2>
+            <span class="badge">{{ reviews|length }} reseñas</span>
+        </div>
+        
+        {% if reviews and reviews|length > 0 %}
+        <div class="reviews-list">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-media">
+                        <a href="{{ url_for('movie_detail' if review.itemType == 'Movie' else 'tvshow_detail', id=review.movieId) }}" class="media-link">
+                            <strong>{{ review.movieTitle }}</strong>
+                            <span class="media-type">{{ 'Película' if review.itemType == 'Movie' else 'Serie' }}</span>
+                        </a>
+                    </div>
+                    <div class="review-rating">
+                        <div class="stars">
+                            {% for i in range(5) %}
+                            <i class="fas fa-star {% if i < review.rating %}active{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="review-date">
+                            {% if review.date is string %}
+                                {{ review.date[:10] }}
+                            {% else %}
+                                {{ review.date.strftime('%d/%m/%Y') }}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p>{{ review.text }}</p>
+                </div>
+                <div class="review-actions">
+                    <form action="{{ url_for('delete_review', id=review._id) }}" method="POST" class="delete-form">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta reseña?')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-comments"></i>
+            <h3>No has escrito reseñas aún</h3>
+            <p>Comparte tu opinión sobre películas y series</p>
+            <a href="{{ url_for('view_movies') }}" class="btn btn-primary">Explorar Contenido</a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

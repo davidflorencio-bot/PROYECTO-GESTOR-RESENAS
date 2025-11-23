@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="detail-page">
+    <!-- Movie Header -->
+    <section class="detail-header" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{{ movie.backdrop }}');">
+        <div class="detail-container">
+            <div class="detail-poster">
+                <img src="{{ movie.poster }}" alt="{{ movie.title }}">
+            </div>
+            <div class="detail-info">
+                <h1 class="detail-title">{{ movie.title }}</h1>
+                {% if movie.originalTitle and movie.originalTitle != movie.title %}
+                <h2 class="detail-original-title">{{ movie.originalTitle }}</h2>
+                {% endif %}
+                
+                <div class="detail-meta">
+                    <span class="rating"><i class="fas fa-star"></i> {{ movie.rating }}/10</span>
+                    <span class="year">
+                        {% if movie.releaseDate is string %}
+                            {{ movie.releaseDate[:4] }}
+                        {% else %}
+                            {{ movie.releaseDate.year }}
+                        {% endif %}
+                    </span>
+                    <span class="duration">{{ movie.duration }} min</span>
+                    <span class="status">{{ movie.status }}</span>
+                </div>
+                
+                <div class="detail-genres">
+                    {% for genre in movie.genre %}
+                    <span class="genre-tag">{{ genre }}</span>
+                    {% endfor %}
+                </div>
+                
+                <p class="detail-overview">{{ movie.overview }}</p>
+                
+                <div class="detail-actions">
+                    {% if user %}
+                    <button class="btn btn-primary watchlist-btn" 
+                            data-id="{{ movie._id }}" 
+                            data-type="movie"
+                            data-title="{{ movie.title }}"
+                            data-poster="{{ movie.poster }}">
+                        <i class="fas fa-plus"></i> Mi Lista
+                    </button>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Inicia sesión para agregar
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if movie.platforms %}
+                <div class="platforms">
+                    <h4>Disponible en:</h4>
+                    <div class="platforms-list">
+                        {% for platform in movie.platforms %}
+                        {% if platform.available %}
+                        <div class="platform">
+                            {% if platform.logo %}
+                            <img src="{{ platform.logo }}" alt="{{ platform.name }}">
+                            {% endif %}
+                            <span>{{ platform.name }}</span>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Cast Section -->
+    {% if movie.cast %}
+    <section class="section">
+        <h2>Reparto</h2>
+        <div class="cast-grid">
+            {% for actor in movie.cast[:6] %}
+            <div class="cast-card">
+                <img src="{{ actor.profile or '/static/images/default-avatar.png' }}" alt="{{ actor.name }}" onerror="this.src='/static/images/default-avatar.png'">
+                <h4>{{ actor.name }}</h4>
+                <p>{{ actor.character }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Reviews Section -->
+    <section class="section">
+        <div class="section-header">
+            <h2>Reseñas ({{ reviews|length }})</h2>
+            {% if user %}
+            <button class="btn btn-primary" onclick="toggleReviewForm()">
+                <i class="fas fa-edit"></i> Escribir Reseña
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- Review Form -->
+        {% if user %}
+        <div id="review-form" class="review-form" style="display: none;">
+            <h3>Tu Reseña</h3>
+            <form action="{{ url_for('add_review') }}" method="POST">
+                <input type="hidden" name="movieId" value="{{ movie._id }}">
+                <input type="hidden" name="itemType" value="Movie">
+                
+                <div class="rating-input">
+                    <label>Calificación:</label>
+                    <div class="stars">
+                        {% for i in range(5,0,-1) %}
+                        <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required>
+                        <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <textarea name="text" placeholder="Escribe tu reseña..." required maxlength="2000"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Publicar Reseña</button>
+                    <button type="button" class="btn btn-outline" onclick="toggleReviewForm()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Reviews List -->
+        <div class="reviews-list">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-user">
+                        <img src="{{ review.userId.avatar if review.userId and review.userId.avatar else '/static/images/default-avatar.png' }}" 
+                             alt="{{ review.username }}" 
+                             onerror="this.src='/static/images/default-avatar.png'">
+                        <div>
+                            <h4>{{ review.username }}</h4>
+                            <span class="review-date">
+                                {% if review.date is string %}
+                                    {{ review.date[:10] }}
+                                {% else %}
+                                    {{ review.date.strftime('%d/%m/%Y') }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        <div class="stars">
+                            {% for i in range(5) %}
+                            <i class="fas fa-star {% if i < review.rating %}active{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <p>{{ review.text }}</p>
+                </div>
+                <div class="review-actions">
+                    {% if user and review.userId and user._id == review.userId._id %}
+                    <form action="{{ url_for('delete_review', id=review._id) }}" method="POST" class="delete-form">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta reseña?')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-comments"></i>
+                <h3>No hay reseñas aún</h3>
+                <p>Sé el primero en escribir una reseña para esta película</p>
+                {% if not user %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Iniciar sesión para reseñar</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<script>
+function toggleReviewForm() {
+    const form = document.getElementById('review-form');
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+// Mostrar formulario automáticamente si no hay reseñas
+document.addEventListener('DOMContentLoaded', function() {
+    const reviews = document.querySelectorAll('.review-card');
+    const form = document.getElementById('review-form');
+    const emptyState = document.querySelector('.empty-state');
+    
+    if (reviews.length === 0 && emptyState && form) {
+        form.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}
