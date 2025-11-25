@@ -39,9 +39,8 @@
       "!**/coverage/**"
     ],
     "coverageDirectory": "coverage",
+    "coverageReporters": ["json", "lcov", "text"], 
     "forceExit": true,
     "detectOpenHandles": true
   }
-
- 
 }

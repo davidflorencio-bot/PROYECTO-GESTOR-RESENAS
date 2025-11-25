@@ -1,0 +1,19 @@
+{
+  "name": "proyecto-gestor-resenas",
+  "version": "1.0.0",
+  "description": "Configuración central para el análisis de calidad y tests Full-Stack (Backend/Frontend).",
+  
+  "scripts": {
+    "test:backend": "cd backend && npm run test:coverage",
+    "test:frontend": "npx nyc --cwd ./frontend --reporter=lcov --reporter=text npx mocha ./frontend/tests/**/*.js",
+    "test:all": "npm run test:backend && npm run test:frontend",
+    "sonar": "npm run test:all && sonar-scanner",
+    "install:all": "npm install && cd backend && npm install"
+  },
+  
+  "devDependencies": {
+    "mocha": "^10.0.0",
+    "chai": "^4.0.0",
+    "nyc": "^15.0.0"
+  }
+}
