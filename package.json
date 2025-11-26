@@ -5,7 +5,7 @@
   
   "scripts": {
     "test:backend": "cd backend && npm run test:coverage",
-    "test:frontend": "npx nyc --cwd ./frontend --reporter=lcov --reporter=text npx mocha ./frontend/tests/**/*.js",
+    "test:frontend": "npx nyc --cwd ./frontend --reporter=lcov --reporter=text --report-dir frontend/coverage npx mocha ./frontend/**/*.test.js",
     "test:all": "npm run test:backend && npm run test:frontend",
     "sonar": "npm run test:all && sonar-scanner",
     "install:all": "npm install && cd backend && npm install"

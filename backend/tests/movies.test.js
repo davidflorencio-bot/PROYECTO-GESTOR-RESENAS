@@ -246,4 +246,20 @@ describe('Movies Controller - COMPLETE', () => {
     expect(response.body).toContain('Drama');
     expect(response.body).toContain('Romance');
   });
+
+    test('GET /movies/:id - should return 400 for invalid MongoDB ID format', async () => {
+        const response = await request(app)
+            .get('/api/movies/invalid-id-format') // ID inválido
+            .expect(400);
+
+        expect(response.body.error).toContain('ID de película inválido');
+    });
+
+    test('GET /movies/genre/:genre - should return 404 if no movies found for genre', async () => {
+        const response = await request(app)
+            .get('/api/movies/genre/NonExistentGenre')
+            .expect(200);
+
+       expect(response.body).toEqual([]);
+    });
 });
